@@ -110,12 +110,16 @@ const DialogTitle = ({ children }) => (
   <h3 className="text-lg font-semibold">{children}</h3>
 );
 
-// Mock components
-
-
 const Link = ({ to, children, className = '' }) => (
   <a href={to} className={className}>{children}</a>
 );
+
+// Beautiful e-bike images for gallery
+const BIKE_IMAGES = [
+  'https://images.unsplash.com/photo-1511994298241-608e28f14fde?w=800',  // Road e-bike
+  'https://images.unsplash.com/photo-1502744688674-c619d1586c9e?w=800',  // City e-bike  
+  'https://images.unsplash.com/photo-1571068316344-75bc76f77890?w=800'   // Mountain e-bike
+];
 
 // Mock data
 const mockBike = {
@@ -130,9 +134,9 @@ const mockBike = {
   weight: 25,
   description: 'Experience the perfect blend of power and comfort with this premium electric mountain bike. Featuring a high-capacity battery, robust motor, and premium components, this e-bike is ideal for both urban commuting and off-road adventures.',
   images: [
-    { image_url: '/api/placeholder/800/600' },
-    { image_url: '/api/placeholder/800/600' },
-    { image_url: '/api/placeholder/800/600' }
+    { image_url: BIKE_IMAGES[2] }, // Main mountain bike image
+    { image_url: BIKE_IMAGES[0] }, // Road bike angle
+    { image_url: BIKE_IMAGES[1] }  // City bike perspective
   ],
   features: [
     'Helmet Included',
@@ -188,7 +192,6 @@ const getBikeTypeLabel = (type) => {
 const toast = {
   success: (message) => console.log('Success:', message)
 };
-
 
 const RatingsList = ({ bikeId, bikeTitle, maxDisplay }) => (
   <div>
@@ -311,7 +314,6 @@ const BikeDetails = () => {
     bike.owner?.first_name && bike.owner?.last_name
       ? `${bike.owner.first_name} ${bike.owner.last_name}`
       : 'Bike Owner';
-  const hostImage = '/api/placeholder/48/48';
   const pricePerDay = bike.daily_rate || 45;
 
   return (
@@ -364,60 +366,106 @@ const BikeDetails = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Column - Images and Details */}
           <div className="lg:col-span-2">
-            {/* Image Gallery */}
-            <div className="relative aspect-[4/3] rounded-xl overflow-hidden mb-8 bg-gray-100">
+            {/* Enhanced Image Gallery */}
+            <div className="relative aspect-[4/3] rounded-xl overflow-hidden mb-8 bg-gray-100 shadow-lg">
               <img
                 src={
                   bike.images.length > 0
                     ? bike.images[currentImageIndex].image_url
-                    : '/api/placeholder/800/600'
+                    : BIKE_IMAGES[0]
                 }
                 alt={bike.title}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover transition-all duration-500"
+                onError={(e) => {
+                  e.target.src = BIKE_IMAGES[0]; // Fallback to first default image
+                }}
               />
+              
+              {/* Image Counter */}
+              <div className="absolute top-4 right-4 bg-black/50 text-white px-3 py-1 rounded-full text-sm backdrop-blur-sm">
+                {currentImageIndex + 1} / {bike.images.length}
+              </div>
+              
               {bike.images.length > 1 && (
                 <>
                   <button
                     onClick={prevImage}
-                    className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2"
+                    className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/90 hover:bg-white rounded-full p-3 shadow-lg transition-all duration-200 hover:scale-110"
                   >
-                    <ChevronLeft className="h-5 w-5" />
+                    <ChevronLeft className="h-5 w-5 text-gray-700" />
                   </button>
                   <button
                     onClick={nextImage}
-                    className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2"
+                    className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/90 hover:bg-white rounded-full p-3 shadow-lg transition-all duration-200 hover:scale-110"
                   >
-                    <ChevronRight className="h-5 w-5" />
+                    <ChevronRight className="h-5 w-5 text-gray-700" />
                   </button>
+                  
+                  {/* Image indicators */}
                   <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
                     {bike.images.map((_, index) => (
                       <button
                         key={index}
                         onClick={() => setCurrentImageIndex(index)}
-                        className={`w-2 h-2 rounded-full ${
-                          index === currentImageIndex ? 'bg-white' : 'bg-white/50'
+                        className={`w-3 h-3 rounded-full transition-all duration-200 ${
+                          index === currentImageIndex 
+                            ? 'bg-white shadow-lg scale-110' 
+                            : 'bg-white/60 hover:bg-white/80'
                         }`}
                       />
                     ))}
                   </div>
                 </>
               )}
+              
+              {/* Gradient overlay for better text visibility */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent pointer-events-none" />
             </div>
 
-            {/* Host Info */}
-            <div className="flex items-center justify-between p-6 border border-gray-200 rounded-lg mb-8">
+            {/* Thumbnail Gallery */}
+            {bike.images.length > 1 && (
+              <div className="grid grid-cols-3 gap-4 mb-8">
+                {bike.images.map((image, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setCurrentImageIndex(index)}
+                    className={`relative aspect-[4/3] rounded-lg overflow-hidden transition-all duration-200 ${
+                      index === currentImageIndex 
+                        ? 'ring-2 ring-rose-500 scale-105' 
+                        : 'hover:scale-105 opacity-70 hover:opacity-100'
+                    }`}
+                  >
+                    <img
+                      src={image.image_url}
+                      alt={`${bike.title} - View ${index + 1}`}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.target.src = BIKE_IMAGES[index % BIKE_IMAGES.length];
+                      }}
+                    />
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Enhanced Host Info */}
+            <div className="flex items-center justify-between p-6 border border-gray-200 rounded-xl mb-8 bg-gray-50/50">
               <div className="flex items-center">
-                <img
-                  src={hostImage}
-                  alt={hostName}
-                  className="w-12 h-12 rounded-full object-cover mr-4"
-                />
+                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-rose-500 to-pink-600 flex items-center justify-center text-white font-semibold text-lg mr-4 shadow-lg">
+                  {hostName.split(' ').map(n => n[0]).join('').toUpperCase()}
+                </div>
                 <div>
-                  <h3 className="font-semibold">Hosted by {hostName}</h3>
-                  <p className="text-sm text-gray-600">Bike Owner • Member since 2024</p>
+                  <h3 className="font-semibold text-lg">Hosted by {hostName}</h3>
+                  <p className="text-sm text-gray-600">E-bike Owner • Member since 2024</p>
+                  <div className="flex items-center mt-1">
+                    <Star className="h-3 w-3 text-yellow-400 fill-current" />
+                    <span className="text-xs text-gray-600 ml-1">Verified Host</span>
+                  </div>
                 </div>
               </div>
-              <Button variant="outline">Contact Host</Button>
+              <Button variant="outline" className="hover:bg-rose-50 hover:border-rose-300">
+                Contact Host
+              </Button>
             </div>
 
             {/* Description */}
@@ -611,6 +659,8 @@ const BikeDetails = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      <Footer />
     </div>
   );
 };
