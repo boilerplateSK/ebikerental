@@ -190,7 +190,7 @@ const BIKE_TYPES_WITH_ALL = [
   'Folding'
 ];
 
-const = [
+const mockBikes = [
   {
     id: 1,
     name: 'Trek Mountain Explorer',
